@@ -1,5 +1,6 @@
 const fs = require('fs');
 const csvtojson = require('convert-csv-to-json');
+const call = require('./ipl.js');
 let matches = csvtojson
   .fieldDelimiter(',')
   .getJsonFromCsv('../data/matches.csv');
@@ -8,7 +9,6 @@ let deliveries = csvtojson
   .getJsonFromCsv('../data/deliveries.csv');
 
 /** first question  */
-const call = require('./ipl.js');
 const matchPlayedPerYear = call.matchPlayedPerYear(matches); ////
 var stringify = JSON.stringify(matchPlayedPerYear);
 fs.writeFileSync('../output/matchPlayedPerYear.json', stringify, 'utf-8');
@@ -23,6 +23,7 @@ const extraRunConceded = call.extraRunConceded(matches, deliveries);
 stringify = JSON.stringify(extraRunConceded);
 fs.writeFileSync('../output/extraRunConceded.json', stringify, 'utf-8');
 
+//fourth question
 const topEconomicBowlers = call.topEconomicBowler(matches, deliveries);
 stringify = JSON.stringify(topEconomicBowlers);
 fs.writeFileSync('../output/topEconomicBowlers.json', stringify, 'utf-8');
