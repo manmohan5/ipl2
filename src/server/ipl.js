@@ -1,109 +1,116 @@
 // function for calculating matchs played per yaer
-function matchPlayedPerYear(data) {
+function matchPlayedPerYear(matches) {
   // calcuting matches played per year
-  let matchPlayed = data
+  return matches
     .map(match => match['season'])
     .reduce((totalMatchesPerYear, season) => {
       totalMatchesPerYear[season] = totalMatchesPerYear[season] + 1 || 1;
-
       return totalMatchesPerYear;
     }, {});
-  return matchPlayed;
 }
 
 ///// function for finding the winners per year
-function winners(matches) {
-  const winnerPerYear = matches.reduce((winnersPerYear, item) => {
-    if (item['winner'] !== '') {
-      if (!winnersPerYear[item.winner]) {
-        //checking whether the winner is already present or not
-        winnersPerYear[item['winner']] = {}; //create object if not present
+function winnersPerYearPerTeam(matches) {
+  const years = matches.map(match => match.season);
+    const year = new Set(years);
+  const winnerPerYear = matches.reduce((winnersPerYear, match) => {
+    if (match['winner'] !== '') {
+      if (!winnersPerYear[match.winner]) {
+        //checking whether the season is already present or not
+        winnersPerYear[match['winner']] = {}; //create object if not present
       }
-      if (!winnersPerYear[item.winner][item['season']]) {
-        winnersPerYear[item['winner']][item['season']] = 1;
+      if (!winnersPerYear[match.winner][match['season']]) {
+        winnersPerYear[match['winner']][match['season']] = 1;
       } else {
-        winnersPerYear[item['winner']][item['season']] += 1;
+        winnersPerYear[match['winner']][match['season']] += 1;
       }
     }
 
     return winnersPerYear;
   }, {});
 
+  Object.values(winnerPerYear).forEach((element) => {
+    year.forEach((item) => {
+      if (!element[item]) {
+        element[item] = 0;
+      }
+    });
+  });
   return winnerPerYear;
 }
 
 // function for calculating extra runs given  by teams
-function extraRunConceded(matches, deliveries) {
-  //find matchsid for the year 2016
-  const matchId = matches
-    .filter(match => match.season === '2016')
-    .map(match => match.id);
-
+function extraRunConceded(deliveries, matchIds) {
   //calculatimg extra runs conceded by each team in 2016
-  const extraRunsPerTEam = deliveries.reduce((extraRuns, data) => {
-    if (matchId.includes(data.match_id)) {
-      if (extraRuns[data['bowling_team']]) {
-        extraRuns[data['bowling_team']] += parseInt(data['extra_runs']);
-      } else extraRuns[data['bowling_team']] = parseInt(data['extra_runs']);
+  return deliveries.reduce((extraRuns, delivery) => {
+    if (matchIds.includes(delivery.match_id)) {
+      if (extraRuns[delivery['bowling_team']]) {
+        extraRuns[delivery['bowling_team']] += parseInt(delivery['extra_runs']);
+      } else
+        extraRuns[delivery['bowling_team']] = parseInt(delivery['extra_runs']);
     }
 
     return extraRuns;
   }, {});
-
-  return extraRunsPerTEam;
 }
 
-function topEconomicBowler(matches, deliveries) {
-  //find matchsid for the year 2015
-  const matchId = matches
-    .filter(match => match.season === '2015')
-    .map(match => match.id);
-
+function topEconomicBowler(deliveries, matchIds) {
   // calculating balls and runs conceded by each bowler
-  const bowlersStats = deliveries.reduce((totalRunsAndBalls, data) => {
-    if (matchId.includes(data['match_id'])) {
-      if (!totalRunsAndBalls[data['bowler']]) {
-        totalRunsAndBalls[data['bowler']] = {};
+  const bowlersStats = deliveries.reduce((totalRunsAndBalls, delivery) => {
+    if (matchIds.includes(delivery['match_id'])) {
+      if (!totalRunsAndBalls[delivery['bowler']]) {
+        totalRunsAndBalls[delivery['bowler']] = {};
       }
-      if (totalRunsAndBalls[data['bowler']].ballsByBowler) {
-        totalRunsAndBalls[data['bowler']].ballsByBowler += 1;
+      if (totalRunsAndBalls[delivery['bowler']].ballsByBowler) {
+        totalRunsAndBalls[delivery['bowler']].ballsByBowler += 1;
       } else {
-        totalRunsAndBalls[data['bowler']].ballsByBowler = 1;
+        totalRunsAndBalls[delivery['bowler']].ballsByBowler = 1;
       }
-      if (totalRunsAndBalls[data['bowler']].runsConcededByBowler) {
-        totalRunsAndBalls[data['bowler']].runsConcededByBowler += parseInt(
-          data.total_runs
+      if (totalRunsAndBalls[delivery['bowler']].runsConcededByBowler) {
+        totalRunsAndBalls[delivery['bowler']].runsConcededByBowler += parseInt(
+          delivery.total_runs
         );
       } else {
-        totalRunsAndBalls[data.bowler].runsConcededByBowler = parseInt(
-          data.total_runs
+        totalRunsAndBalls[delivery.bowler].runsConcededByBowler = parseInt(
+          delivery.total_runs
         );
       }
     }
     return totalRunsAndBalls;
   }, {});
 
-  //converting key and values as an array
-  const entriesOfbowlersStats = Object.entries(bowlersStats);
-  //console.log(entriesOfbowlersStats[1][1].ballsByBowler)
+  const economyOfBowlers = Object.entries(bowlersStats).reduce(
+    (runRate, runsAndBalls) => {
+      runRate[runsAndBalls[0]] =parseFloat((
+        runsAndBalls[1].runsConcededByBowler /
+        (runsAndBalls[1].ballsByBowler / 6)).toFixed(3));
+      return runRate;
+    },
+    {}
+  );
 
-  //calcutaing econy of each bowler
-  const economyOfBowlers = entriesOfbowlersStats.reduce((runRate, data) => {
-    runRate[data[0]] =
-      data[1].runsConcededByBowler / (data[1].ballsByBowler / 6);
-    return runRate;
-  }, {});
-  //console.log(economyOfBowlers)
   //finding top 10 economic bolwler
   const topEconomicBowlers = Object.entries(economyOfBowlers)
     .sort((a, b) => a[1] - b[1])
-    .slice(0, 10);
+    .slice(0, 10)
+    .reduce((a, b) => {
+      a[b[0]] = b[1];
+      return a;
+    }, {});
   return topEconomicBowlers;
+}
+
+
+function filterMatchId(matches, match_id) {
+  return matches
+    .filter(match => match.season === match_id)
+    .map(match => match.id);
 }
 
 module.exports = {
   matchPlayedPerYear,
-  winners,
+  winnersPerYearPerTeam,
   extraRunConceded,
-  topEconomicBowler
+  topEconomicBowler,
+  filterMatchId
 };

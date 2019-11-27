@@ -14,16 +14,19 @@ var stringify = JSON.stringify(matchPlayedPerYear);
 fs.writeFileSync('../output/matchPlayedPerYear.json', stringify, 'utf-8');
 
 //second question
-const winnersPerYear = call.winners(matches); ////
+const winnersPerYear = call.winnersPerYearPerTeam(matches); ////
 stringify = JSON.stringify(winnersPerYear);
 fs.writeFileSync('../output/winnersPerYear.json', stringify, 'utf-8');
 
 //third question
-const extraRunConceded = call.extraRunConceded(matches, deliveries);
+let matchId=call.filterMatchId(matches,'2016')
+const extraRunConceded = call.extraRunConceded(deliveries,matchId);
 stringify = JSON.stringify(extraRunConceded);
 fs.writeFileSync('../output/extraRunConceded.json', stringify, 'utf-8');
 
 //fourth question
-const topEconomicBowlers = call.topEconomicBowler(matches, deliveries);
+matchId=call.filterMatchId(matches,'2015')
+const topEconomicBowlers = call.topEconomicBowler(deliveries,matchId);
 stringify = JSON.stringify(topEconomicBowlers);
 fs.writeFileSync('../output/topEconomicBowlers.json', stringify, 'utf-8');
+
